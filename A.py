@@ -13,7 +13,6 @@ v0.4 20171129，逻辑梳理，各个板块的统一以及多线程
 '''
 # 导入函数库
 from pylab import *
-mpl.rcParams['font.sans-serif'] = ['SimHei'] # 中文乱码的问题
 from WindPy import * # 导入wind接口
 from sqlalchemy import create_engine #导入数据库接口  
 import datetime,time,calendar
