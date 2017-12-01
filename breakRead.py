@@ -36,35 +36,44 @@ if __name__ == '__main__':
       select * from $arg1
       """
     query_sql = Template(query_sql) # template方法
-    df = pd.read_sql_query(query_sql .substitute(arg1='break'),engine) # 配合pandas的方法读取数据库值
-    print(df)
+    df = pd.read_sql_query(query_sql .substitute(arg1='break_new_1'),engine) # 配合pandas的方法读取数据库值
     #获取df['code'], df['break_date']
     pct_chg_5 = []
-    pct_chg_10 = []
     pct_chg_20 = []
-    pct_chg_30 = []
     pct_chg_60 = []
+    pct_chg_120 = []
+    pct_chg_240 = []
     code_list = list(df['code'])
     date_list = list(df['break_date'])
     for i in range(0, len(code_list)):
         #获取5/10/20/30/60日涨跌幅
-        pct_chg_n5d = w.wss(code_list[i], "pct_chg_nd","days=5;tradeDate="+date_list[i].strftime("%y%m%d")).Data[0][0]
-        pct_chg_n10d = w.wss(code_list[i], "pct_chg_nd","days=5;tradeDate="+date_list[i].strftime("%y%m%d")).Data[0][0]
-        pct_chg_n20d = w.wss(code_list[i], "pct_chg_nd","days=5;tradeDate="+date_list[i].strftime("%y%m%d")).Data[0][0]
-        pct_chg_n30d = w.wss(code_list[i], "pct_chg_nd","days=5;tradeDate="+date_list[i].strftime("%y%m%d")).Data[0][0]
-        pct_chg_n60d = w.wss(code_list[i], "pct_chg_nd","days=5;tradeDate="+date_list[i].strftime("%y%m%d")).Data[0][0]
+        security_code = code_list[i]
+        temp = date_list[i].strftime("%Y-%m-%d")
+        date_str = w.tdaysoffset(1, temp, "").Data[0][0].strftime("%Y%m%d")
+        print(security_code)
+        print(date_str)
+        #print(_wss.ErrorCode)
+        pct_chg_n5d = w.wss(security_code, "pct_chg_nd","days=5;tradeDate="+date_str).Data[0][0]
+        pct_chg_n20d = w.wss(security_code, "pct_chg_nd","days=20;tradeDate="+date_str).Data[0][0]
+        pct_chg_n60d = w.wss(security_code, "pct_chg_nd","days=60;tradeDate="+date_str).Data[0][0]
+        pct_chg_n120d = w.wss(security_code, "pct_chg_nd","days=120;tradeDate="+date_str).Data[0][0]
+        pct_chg_n240d = w.wss(security_code, "pct_chg_nd","days=240;tradeDate="+date_str).Data[0][0]
+        
         pct_chg_5.append(pct_chg_n5d)
-        pct_chg_10.append(pct_chg_n10d)
         pct_chg_20.append(pct_chg_n20d)
-        pct_chg_30.append(pct_chg_n30d)
         pct_chg_60.append(pct_chg_n60d)
-    df['pct_chg_5'] = pct_chg_5
-    df['pct_chg_10'] = pct_chg_10
-    df['pct_chg_20'] = pct_chg_20
-    df['pct_chg_30'] = pct_chg_30
-    df['pct_chg_60'] = pct_chg_60
+        pct_chg_120.append(pct_chg_n120d)
+        pct_chg_240.append(pct_chg_n240d)
+        
+    date_list = [d.date() for d in date_list]
+    df['break_date'] = date_list
+    df['pct_chg_5(%)'] = pct_chg_5
+    df['pct_chg_20(%)'] = pct_chg_20
+    df['pct_chg_60(%)'] = pct_chg_60
+    df['pct_chg_120(%)'] = pct_chg_120
+    df['pct_chg_240(%)'] = pct_chg_240
     #重新写入数据库
-    df.to_sql('new', engine, if_exists='replace', index=True)  #增量入库
+    df.to_sql('break_new_3', engine, if_exists='replace', index=True)  #增量入库
     print("mission complete!")
     end_time = datetime.datetime.now()
     print('执行时间:%d mins'%(int((end_time - start_time).seconds)/60))
